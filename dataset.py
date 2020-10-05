@@ -70,6 +70,7 @@ class Dataset():
             src_dir_path: source directory
         """
         dir_paths = sorted(glob('{}/*'.format(src_dir_path)))
+        print(dir_paths)
         for dir_path in tqdm(dir_paths):
             if not os.path.isdir(dir_path):
                 continue

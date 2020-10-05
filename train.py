@@ -55,10 +55,20 @@ class TrainingFontDesignGAN():
     def _save_flags(self):
         """Save FLAGS as JSON
 
-        Write FLAGS paramaters as 'FLAGS.gan_dir/log/flsgs.json'.
+        Write FLAGS paramaters as 'FLAGS.gan_dir/log/flags.json'.
         """
+
+        
+        dic = {}
+        for k in FLAGS:
+            v = FLAGS[k].value
+            dic[k] = v 
+            #print("k:{} v:{}".format(k,v))
+        
         with open(os.path.join(self.dst_log, 'flags.json'), 'w') as f:
-            json.dump(FLAGS.__dict__['__flags'], f, indent=4)
+            #json.dump(FLAGS.__dict__['__flags'], f, indent=4)
+            json.dump(dic, f, indent=4)
+        
 
     def _load_dataset(self):
         """Load dataset

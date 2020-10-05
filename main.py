@@ -43,7 +43,7 @@ def define_flags():
     tf.app.flags.DEFINE_integer('img_width', 64, 'Image\'s width')
     tf.app.flags.DEFINE_integer('img_height', 64, 'Image\'\'s height')
     tf.app.flags.DEFINE_integer('img_dim', 3, 'Image\'s dimention')
-    tf.app.flags.DEFINE_string('chars_type', 'caps', 'Types of characters')
+    tf.app.flags.DEFINE_string('chars_type', 'alphabet', 'Types of characters')
     tf.app.flags.DEFINE_string('gpu_ids', ', '.join([str(i) for i in range(get_gpu_n())]), 'GPU IDs to use')
     tf.app.flags.DEFINE_integer('batch_size', 256, 'Batch size')
     tf.app.flags.DEFINE_string('arch', 'DCGAN', 'Architecture of GAN')
@@ -52,7 +52,7 @@ def define_flags():
     tf.app.flags.DEFINE_integer('gan_epoch_n', 10000, '# of epochs for training GAN')
     tf.app.flags.DEFINE_integer('critic_n', 5, '# of critics to approximate wasserstein distance')
     tf.app.flags.DEFINE_integer('sample_imgs_interval', 10, 'Interval epochs of saving images')
-    tf.app.flags.DEFINE_integer('sample_col_n', 26, '# of sample images\' columns')
+    tf.app.flags.DEFINE_integer('sample_col_n', 52, '# of sample images\' columns')
     tf.app.flags.DEFINE_integer('keep_ckpt_interval', 250, 'Interval of keeping TensorFlow\'s dumps')
     tf.app.flags.DEFINE_boolean('run_tensorboard', True, 'Run tensorboard or not')
     tf.app.flags.DEFINE_integer('tensorboard_port', 6006, 'Port of tensorboard')
@@ -64,8 +64,10 @@ def main(argv=None):
         from font2img.font2img import font2img
         if 'hiragana' in FLAGS.chars_type:
             src_chars_txt_path = 'font2img/src_chars_txt/hiragana_seion.txt'
+        elif 'caps' in FLAGS.chars_type:
+            src_chars_txt_path = 'font2img/src_chars_txt/alphabets_hankaku_smalls.txt'
         else:
-            src_chars_txt_path = 'font2img/src_chars_txt/alphabets_hankaku_caps.txt'
+            pass
         if not os.path.exists(FLAGS.font_pngs):
             os.makedirs(FLAGS.font_pngs)
         f2i = font2img(src_font_dir_path=FLAGS.font_ttfs,

@@ -4,6 +4,7 @@ import numpy as np
 import imageio
 
 ALPHABET_CAPS = list(chr(i) for i in range(65, 65 + 26))
+ALPHABET_ALL = list("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 HIRAGANA_SEION = list('あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをん')
 
 
@@ -38,13 +39,16 @@ def set_chars_type(chars_type):
     Set characters you want to generate.
 
     Args:
-        chars_type: Type of characters. "caps" or "hiragana". If you want both of them, set "caps,hiragana".
+        chars_type: Type of characters. "caps" or "hiragana" or "alphabet". If you want both of them, set "caps,hiragana".
     """
     chars = list()
     if 'caps' in chars_type:
         chars.extend(ALPHABET_CAPS)
     if 'hiragana' in chars_type:
         chars.extend(HIRAGANA_SEION)
+    if 'alphabet' in chars_type:
+        chars.extend(ALPHABET_ALL)
+
     return chars
 
 
