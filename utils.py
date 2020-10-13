@@ -64,3 +64,27 @@ def make_gif(src_imgs_dir_path, dst_img_path):
     img_paths = sorted(glob('{}/*.png'.format(src_imgs_dir_path)))
     imgs = [imageio.imread(f) for f in img_paths]
     imageio.mimsave(dst_img_path, imgs)
+
+class Translater:
+    def __init__(self,num_class):
+
+        self.num_class = num_class
+
+        self.alpha_dict = {}
+        for i,c in enumerate(range(ord('A'),ord('Z')+1)):
+            self.alpha_dict[chr(c)] = i
+        
+        offset = len(self.alpha_dict)
+
+        for i,c in enumerate(range(ord('a'),ord('z')+1)):
+            self.alpha_dict[chr(c)] = i + offset
+
+
+    def chr2num(self,label): 
+        num_label = self.alpha_dict[label]
+        #return torch.nn.functional.one_hot(num_label,num_classes=self.num_class)
+        return num_label
+
+    def num2chr(self,num):
+        char = self.alpha_dict.keys()[self.alpha_dict.values().index(num)]
+        return char

@@ -28,6 +28,8 @@ def define_flags():
     tf.app.flags.DEFINE_boolean('png2h5', False, 'Pack images into HDF5 format file')
     tf.app.flags.DEFINE_boolean('train', False, 'Train GAN')
     tf.app.flags.DEFINE_boolean('generate', False, 'Generate images')
+    tf.app.flags.DEFINE_boolean('make_dataset', False, 'make dataset for train estimator')
+    tf.app.flags.DEFINE_boolean('validate', False, 'validate generated character by input latent variable and label')
     tf.app.flags.DEFINE_boolean('generate_walk', False, 'Generate images with random walking')
 
     # Paths
@@ -37,6 +39,7 @@ def define_flags():
     tf.app.flags.DEFINE_string('gan_dir', 'result/' + now_str, 'Path of result\'s destination')
     tf.app.flags.DEFINE_string('ids', '', 'Path of input IDs settings\' JSON file')
     tf.app.flags.DEFINE_string('gen_name', now_str, 'Filename of saving image')
+    tf.app.flags.DEFINE_string('file','', 'condition and latent variable for validate network')
     tf.app.flags.DEFINE_integer('char_img_n', 256, '# of frames for generate_walk mode')
 
     # Other options
@@ -50,6 +53,7 @@ def define_flags():
     tf.app.flags.DEFINE_integer('style_ids_n', 256, '# of style IDs')
     tf.app.flags.DEFINE_integer('style_z_size', 100, 'z\'s size')
     tf.app.flags.DEFINE_integer('gan_epoch_n', 10000, '# of epochs for training GAN')
+    tf.app.flags.DEFINE_integer('gen_num', 100, 'the number of images generated from GAN')
     tf.app.flags.DEFINE_integer('critic_n', 5, '# of critics to approximate wasserstein distance')
     tf.app.flags.DEFINE_integer('sample_imgs_interval', 10, 'Interval epochs of saving images')
     tf.app.flags.DEFINE_integer('sample_col_n', 52, '# of sample images\' columns')
@@ -67,7 +71,7 @@ def main(argv=None):
         elif 'caps' in FLAGS.chars_type:
             src_chars_txt_path = 'font2img/src_chars_txt/alphabets_hankaku_smalls.txt'
         else:
-            pass
+            src_chars_txt_path = 'font2img/src_chars_txt/alphabets_hankaku_smalls.txt'
         if not os.path.exists(FLAGS.font_pngs):
             os.makedirs(FLAGS.font_pngs)
         f2i = font2img(src_font_dir_path=FLAGS.font_ttfs,
@@ -103,6 +107,23 @@ def main(argv=None):
         gan = GeneratingFontDesignGAN()
         gan.generate(filename=FLAGS.gen_name)
         del gan
+    if FLAGS.make_dataset:
+        assert FLAGS.gan_dir != '', 'have to set --gan_dir'
+        from make_dataset import GeneratingFontDesignGAN
+        gan = GeneratingFontDesignGAN()
+        gan.generate(filename=FLAGS.gen_name, gen_num=FLAGS.gen_num)
+        del gan
+    if FLAGS.validate:
+        assert FLAGS.gan_dir != '', 'have to set --gan_dir'
+        from validate import GeneratingFontDesignGAN
+        """
+        if FLAGS.file != '':
+            gan = GeneratingFontDesignGAN()
+            gan.generate(filename=FLAGS.gen_name)
+        else:
+            gan = GeneratingFontDesignGAN()
+            gan.generate(filename=FLAGS.gen_name)
+        """
     if FLAGS.generate_walk:
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
         from generate import GeneratingFontDesignGAN

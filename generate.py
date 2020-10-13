@@ -184,6 +184,7 @@ class GeneratingFontDesignGAN():
                             lambda: tf.nn.embedding_lookup(style_embedding, self.style_ids_y))
         style_z = style_z_x * tf.expand_dims(1. - self.style_ids_alpha, 1) \
             + style_z_y * tf.expand_dims(self.style_ids_alpha, 1)
+            
         char_z_x = tf.one_hot(self.char_ids_x, self.char_embedding_n)
         char_z_y = tf.one_hot(self.char_ids_y, self.char_embedding_n)
         char_z = char_z_x * tf.expand_dims(1. - self.char_ids_alpha, 1) \
