@@ -92,7 +92,14 @@ class GeneratingFontDesignGAN():
 
         # generate or setting latent variable
         self.latent = tf.random_uniform((self.batch_size, self.style_z_size), -1, 1)
-        
+
+        sess = tf.InteractiveSession()
+        self.latent_numpy = self.latent.eval(session=sess)
+        #print(self.latent_numpy)
+        sess.close()
+
+        #self.latent = tf.convert_to_tensor(self.latent_numpy)
+
         self.col_n = self.batch_size
         self.row_n = math.ceil(self.batch_size / self.col_n)
 
@@ -178,35 +185,69 @@ class GeneratingFontDesignGAN():
         #pretrained_saver.restore(self.sess, checkpoint.model_checkpoint_path)
         #pretrained_saver.restore(self.sess, ckpt_filepath)
 
-    def _save_imgs(self, src_imgs, dst_dir, iter):
+    def _save_imgs_labels_and_latent(  
+                                self, 
+                                src_imgs, 
+                                labels, 
+                                vectors,
+                                dst_dir, 
+                                iter, 
+                                fp):
         """save images
 
         save each images by each names
 
         Args:
             src_imgs: Images that will be saved.
+            labels  : Character ID used to generate images
+            vectors : Multidimensional uniform random number to generate images
             dst_path: Destination path of image.
+            iter    : the number of iteration
+            fp      : file pointer to save information to .csv
         """
-        print(src_imgs.shape)
         #concated_img = concat_imgs(src_imgs, self.row_n, self.col_n)
-        for i,src_img in enumerate(src_imgs):
+        for i,(src_img,label,vector) in enumerate(zip(src_imgs,labels,vectors)):
             src_img = (src_img + 1.) * 127.5
             if self.img_dim == 1:
                 src_img = np.reshape(src_img, (-1, 1 * self.img_height))
             else:
                 sec_img = np.reshape(src_img, (-1, 1 * self.img_height, self.img_dim))
 
+            image_dir_path = os.path.join(dst_dir, 'images')
+            vector_dir_path = os.path.join(dst_dir, 'vectors')
+
+            if not os.path.exists(image_dir_path):
+                os.mkdir(image_dir_path)
+
             pil_img = Image.fromarray(np.uint8(src_img))
-            pil_img.save(os.path.join(dst_dir, '{}.png'.format(iter+i)))
+            pil_img.save(os.path.join(image_dir_path, '{}.png'.format(iter+i)))
+
+            if not os.path.exists(vector_dir_path):
+                os.mkdir(vector_dir_path)
+            
+            np.save(os.path.join(vector_dir_path, '{}'.format(iter+i)),vector)
+
+            fp.writerow({"image_id":iter+i,"char_label":self.translater.num2chr(label)})
+            
 
     def generate(self, filename='datasets',gen_num=20):
         """Generate fonts
 
         Generate fonts from raw data or random input.
         """
-        for i in range(gen_num//self.batch_size):
-            for id in self.char_gen_ids:
-                print(self.translater.num2chr(id))
-            generated_imgs = self.sess.run(self.generated_imgs,feed_dict={self.char_ids: self.char_gen_ids})
-            self._save_imgs(generated_imgs, self.dst_generated,iter=i*self.batch_size)
-            self._setup_inputs()
+        csv_filename = os.path.join(self.dst_generated,"information.csv")
+        Header = ["image_id","char_label"]
+
+        with open(csv_filename,'w') as f:
+            writer = csv.DictWriter(f,fieldnames=Header)
+            writer.writeheader()
+            for i in range(gen_num//self.batch_size):
+                generated_imgs = self.sess.run(self.generated_imgs,feed_dict={self.char_ids: self.char_gen_ids})
+                self._save_imgs_labels_and_latent( 
+                                            src_imgs=generated_imgs, 
+                                            labels=self.char_gen_ids, 
+                                            vectors=self.latent_numpy,
+                                            dst_dir=self.dst_generated,
+                                            iter=i*self.batch_size,
+                                            fp=writer)
+                self._setup_inputs()

@@ -86,5 +86,5 @@ class Translater:
         return num_label
 
     def num2chr(self,num):
-        char = self.alpha_dict.keys()[self.alpha_dict.values().index(num)]
+        char = list(self.alpha_dict.keys())[list(self.alpha_dict.values())[num]]
         return char

@@ -108,12 +108,18 @@ def main(argv=None):
         gan.generate(filename=FLAGS.gen_name)
         del gan
     if FLAGS.make_dataset:
+        """
+        make dataset for inverse estimation of Glyph GAN
+        """
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
         from make_dataset import GeneratingFontDesignGAN
         gan = GeneratingFontDesignGAN()
         gan.generate(filename=FLAGS.gen_name, gen_num=FLAGS.gen_num)
         del gan
     if FLAGS.validate:
+        """
+        validate dataset by input optional latent variable and condition
+        """
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
         from validate import GeneratingFontDesignGAN
         """
