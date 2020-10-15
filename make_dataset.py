@@ -85,7 +85,7 @@ class GeneratingFontDesignGAN():
         Setup generating inputs, batchsize and others.
         """
         # setting batch_size
-        self.batch_size = 5
+        self.batch_size = FLAGS.batch_size
 
         # generate char label ,size = batch_size
         self.char_gen_ids = np.random.randint(0,self.char_embedding_n, self.batch_size)
@@ -176,7 +176,7 @@ class GeneratingFontDesignGAN():
         
         pretrained_saver = tf.train.Saver(var_list=var_list)
 
-        ckpt_filename =  "result.ckpt-7581" 
+        ckpt_filename =  "result.ckpt-10000" 
         ckpt_filepath = os.path.join(self.src_log,ckpt_filename)
         pretrained_saver.restore(self.sess, ckpt_filepath)
 
@@ -241,7 +241,7 @@ class GeneratingFontDesignGAN():
         with open(csv_filename,'w') as f:
             writer = csv.DictWriter(f,fieldnames=Header)
             writer.writeheader()
-            for i in range(gen_num//self.batch_size):
+            for i in tqdm(range(gen_num//self.batch_size)):
                 generated_imgs = self.sess.run(self.generated_imgs,feed_dict={self.char_ids: self.char_gen_ids})
                 self._save_imgs_labels_and_latent( 
                                             src_imgs=generated_imgs, 
