@@ -29,7 +29,7 @@ def define_flags():
     tf.app.flags.DEFINE_boolean('train', False, 'Train GAN')
     tf.app.flags.DEFINE_boolean('generate', False, 'Generate images')
     tf.app.flags.DEFINE_boolean('make_dataset', False, 'make dataset for train estimator')
-    tf.app.flags.DEFINE_boolean('validate', False, 'validate generated character by input latent variable and label')
+    tf.app.flags.DEFINE_boolean('eval', False, 'generate character by input latent variable and label')
     tf.app.flags.DEFINE_boolean('generate_walk', False, 'Generate images with random walking')
 
     # Paths
@@ -39,7 +39,8 @@ def define_flags():
     tf.app.flags.DEFINE_string('gan_dir', 'result/' + now_str, 'Path of result\'s destination')
     tf.app.flags.DEFINE_string('ids', '', 'Path of input IDs settings\' JSON file')
     tf.app.flags.DEFINE_string('gen_name', now_str, 'Filename of saving image')
-    tf.app.flags.DEFINE_string('file','', 'condition and latent variable for validate network')
+    tf.app.flags.DEFINE_string('csv_file','', 'csv file written alphabets correspond to latent value')
+    tf.app.flags.DEFINE_string('npy_file','', 'latent value. this is 100 dimensional numpy array')
     tf.app.flags.DEFINE_integer('char_img_n', 256, '# of frames for generate_walk mode')
 
     # Other options
@@ -114,22 +115,21 @@ def main(argv=None):
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
         from make_dataset import GeneratingFontDesignGAN
         gan = GeneratingFontDesignGAN()
-        gan.generate(filename=FLAGS.gen_name, gen_num=FLAGS.gen_num)
+        gan.generate(filename=FLAGS.gen_name,gen_num=FLAGS.gen_num)
         del gan
-    if FLAGS.validate:
+
+    if FLAGS.eval:
         """
         validate dataset by input optional latent variable and condition
         """
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
-        from validate import GeneratingFontDesignGAN
-        """
-        if FLAGS.file != '':
-            gan = GeneratingFontDesignGAN()
-            gan.generate(filename=FLAGS.gen_name)
-        else:
-            gan = GeneratingFontDesignGAN()
-            gan.generate(filename=FLAGS.gen_name)
-        """
+        assert FLAGS.csv_file != '', 'have to set --csv_file'
+        assert FLAGS.npy_file != '', 'have to set --npy_file'
+        from eval import GeneratingFontDesignGAN
+        gan = GeneratingFontDesignGAN()
+        gan.generate(filename=FLAGS.gen_name)
+        del gan
+        
     if FLAGS.generate_walk:
         assert FLAGS.gan_dir != '', 'have to set --gan_dir'
         from generate import GeneratingFontDesignGAN
@@ -139,5 +139,8 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
+    tf.get_logger().setLevel("ERROR")
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+    
     define_flags()
     tf.app.run()
