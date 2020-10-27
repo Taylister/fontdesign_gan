@@ -85,7 +85,10 @@ class GeneratingFontDesignGAN():
         Setup generating inputs, batchsize and others.
         """
         # setting batch_size
-        self.batch_size = FLAGS.batch_size
+        if FLAGS.batch_size <= FLAGS.gen_num:
+            self.batch_size = FLAGS.batch_size
+        else:
+            self.batch_size = FLAGS.gen_num
 
         # generate char label ,size = batch_size
         self.char_gen_ids = np.random.randint(0,self.char_embedding_n, self.batch_size)
@@ -93,24 +96,16 @@ class GeneratingFontDesignGAN():
         # generate or setting latent variable
         self.latent = tf.random_uniform((self.batch_size, self.style_z_size), -1, 1)
 
+        # convert to numpy
         sess = tf.InteractiveSession()
         self.latent_numpy = self.latent.eval(session=sess)
-        #print(self.latent_numpy)
         sess.close()
+        self.latent = tf.convert_to_tensor(self.latent_numpy)
 
-        #self.latent = tf.convert_to_tensor(self.latent_numpy)
 
         self.col_n = self.batch_size
         self.row_n = math.ceil(self.batch_size / self.col_n)
 
-        """
-        csv_filename = os.path.join(opt.output_dirpath,"text_information.csv")
-        Header = ["Char","latent"]
-
-        with open(csv_filename,'w') as f:
-        writer = csv.DictWriter(f,fieldnames=Header)
-        writer.writeheader()
-        """
 
     def _load_dataset(self):
         """Load dataset
@@ -235,19 +230,31 @@ class GeneratingFontDesignGAN():
 
         Generate fonts from raw data or random input.
         """
+        
         csv_filename = os.path.join(self.dst_generated,"information.csv")
         Header = ["image_id","char_label"]
 
         with open(csv_filename,'w') as f:
             writer = csv.DictWriter(f,fieldnames=Header)
             writer.writeheader()
-            for i in tqdm(range(gen_num//self.batch_size)):
+
+            if gen_num >= FLAGS.batch_size:
+                for i in tqdm(range(gen_num//self.batch_size)):
+                    generated_imgs = self.sess.run(self.generated_imgs,feed_dict={self.char_ids: self.char_gen_ids})
+                    self._save_imgs_labels_and_latent( 
+                                                src_imgs=generated_imgs, 
+                                                labels=self.char_gen_ids, 
+                                                vectors=self.latent_numpy,
+                                                dst_dir=self.dst_generated,
+                                                iter=i*self.batch_size,
+                                                fp=writer)
+                    self._setup_inputs()
+            else:
                 generated_imgs = self.sess.run(self.generated_imgs,feed_dict={self.char_ids: self.char_gen_ids})
                 self._save_imgs_labels_and_latent( 
                                             src_imgs=generated_imgs, 
                                             labels=self.char_gen_ids, 
                                             vectors=self.latent_numpy,
                                             dst_dir=self.dst_generated,
-                                            iter=i*self.batch_size,
+                                            iter=0,
                                             fp=writer)
-                self._setup_inputs()

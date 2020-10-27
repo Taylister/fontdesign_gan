@@ -5,5 +5,5 @@ TRAINED="2020-10-05_185356"
 GAN_DIR="./result/${TRAINED}"
 FILE_PATH="sample"
 
-python main.py --make_dataset --gan_dir ${GAN_DIR} --file ${FILE_PATH} --gen_num 50000
+python main.py --make_dataset --gan_dir ${GAN_DIR} --file ${FILE_PATH} --gen_num 80000
 
